@@ -14,6 +14,3 @@ print(BLUE + "This is blue text" + RESET)
 print(MAGENTA + "This is magenta text" + RESET)
 print(CYAN + "This is cyan text" + RESET)
 print(WHITE + "This is white text" + RESET)
-
-class Square:
-    
