@@ -2,6 +2,7 @@ import queue
 import time
 import networkx as nx
 import matplotlib.pyplot as plt
+import random
 
 
 #BFS search logic
@@ -78,29 +79,6 @@ def search_visualizer(result, title, G, pos):
     plt.show()
     time.sleep(2)
 
-def parse_grid_input(input_text):
-    """Parse the input format from algo1.txt to a 2D grid"""
-    # Remove the 'Input:' and brackets, split by lines
-    grid_text = input_text.replace('Input:', '').replace('[', '').replace(']', '').strip()
-    lines = [line.strip() for line in grid_text.split('\n') if line.strip()]
-    
-    grid = []
-    for line in lines:
-        row = []
-        # Split by commas and process each cell
-        cells = [cell.strip() for cell in line.split(',')]
-        for cell in cells:
-            if not cell:  # Skip empty cells
-                continue
-            if cell == 'INF':
-                row.append(float('inf'))  # Use infinity for INF
-            else:
-                row.append(int(cell))  # Convert -1 and 0 to integers
-        if row:
-            grid.append(row)
-    
-    return grid
-
 def grid_to_graph(grid):
     """Convert a 2D grid to a NetworkX graph"""
     G = nx.Graph()
@@ -115,8 +93,8 @@ def grid_to_graph(grid):
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     for r in range(rows):
         for c in range(cols):
-            if grid[r][c] == -1:  # Skip connecting Titan-infested areas
-                continue
+            #if grid[r][c] == -1:  # Skip connecting Titan-infested areas
+             #   continue
                 
             for dr, dc in directions:
                 nr, nc = r + dr, c + dc
@@ -125,8 +103,8 @@ def grid_to_graph(grid):
                     G.add_edge((r, c), (nr, nc))
     
     # Create position mapping for visualization
-    pos = {(r, c): (c, -r) for r in range(rows) for c in range(cols)}
-    
+    pos = {(r, c): (c*.01, -r*.01) for r in range(rows) for c in range(cols)}
+
     return G, pos
 
 def visualize_titan_grid(grid, title="Walls of Maria"):
@@ -282,13 +260,47 @@ def visualize_solution(original_grid, solved_grid, title="Walls of Maria - Solve
     
     # Draw original grid
     ax1.set_title("Original Grid")
-    nx.draw(G1, pos=pos1, ax=ax1, with_labels=False, node_color=node_colors1)
+    nx.draw(G1, pos=pos1, ax=ax1, with_labels=False, node_color=node_colors1, node_shape='s')
     nx.draw_networkx_labels(G1, pos1, labels=labels1, ax=ax1)
     
     # Draw solved grid
     ax2.set_title("Solved Grid")
-    nx.draw(G2, pos=pos2, ax=ax2, with_labels=False, node_color=node_colors2)
+    nx.draw(G2, pos=pos2, ax=ax2, with_labels=False, node_color=node_colors2, node_shape='s')
     nx.draw_networkx_labels(G2, pos2, labels=labels2, ax=ax2)
     
     plt.tight_layout()
     plt.show()
+
+# Complete example:
+if __name__ == "__main__":
+
+    INF = float('inf')
+    opt = [0, -1, INF]
+    randgrid = []
+    m = 20
+    n = 10
+    for i in range(m):
+        row = []  # Create a new row
+        for j in range(n):
+            row.append(random.choice(opt))
+        randgrid.append(row)  # Add the complete row to the grid
+
+    grid1 = [
+        [INF, -1, 0, INF],
+        [INF, INF, INF, -1],
+        [INF, -1, INF, -1],
+        [0, -1, INF, INF]
+    ]
+
+    grid2 = [
+        [0, INF, INF],
+        [INF, -1, INF],
+        [INF, INF, 0]
+    ]
+
+    solved_grid1 = solve_walls_of_maria(grid1)
+    visualize_solution(grid1, solved_grid1)
+    solved_grid2 = solve_walls_of_maria(grid2)
+    visualize_solution(grid2, solved_grid2)
+    solved_grid3 = solve_walls_of_maria(randgrid)
+    visualize_solution(randgrid, solved_grid3)

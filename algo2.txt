@@ -1,0 +1,26 @@
+Algorithm 2: Vibe Check - Card Shuffle 🃏🔥
+You and your friends are playing a trendy card game, but there's a catch—you need to
+organize the deck before the game starts. You are given an integer array hand, where
+hand[i] represents the number on the i-th card. You also have an integer groupSize, which
+determines how many cards should be in each valid group.
+A valid group must follow these rules:
+● Each group has exactly groupSize cards.
+● The cards in a group must be consecutive in value (increasing by 1 each time).
+Your task? Check if it's possible to rearrange the deck into valid groups. If yes, return true,
+otherwise return false.
+Input Format:
+● An integer array hand of size N (1 ≤ N ≤ 105), where hand[i] represents the card
+values.
+● An integer groupSize (1 ≤ groupSize ≤ N).
+Output Format:
+● Return true if the cards can be perfectly grouped as per the rules.
+● Otherwise, return false.
+Sample 1:
+Input: hand = [1, 2, 3, 6, 2, 3, 4, 7, 8], groupSize = 3
+Output: true
+Explanation: The cards can be arranged as [1,2,3], [2,3,4] and [6,7,8]
+Sample 2:
+Input: hand = [1,2,3,3,4,5,6,7], groupSize = 4
+Output: false
+Explanation: The closest we can get is [1,2,3,4] and [3,5,6,7], but the cards in the
+second group are not consecutive.

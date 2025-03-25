@@ -1,4 +1,4 @@
-from main import *
+from visualizer import *
 import random
 
 RED = '\033[31m'
@@ -47,5 +47,11 @@ solved_grid1 = solve_walls_of_maria(grid1)
 visualize_solution(grid1, solved_grid1)
 solved_grid2 = solve_walls_of_maria(grid2)
 visualize_solution(grid2, solved_grid2)
+solved_grid3 = solve_walls_of_maria(randgrid)
+visualize_solution(randgrid, solved_grid3)
+
+visualize_titan_grid(grid1, solved_grid1)
+solved_grid2 = solve_walls_of_maria(grid2)
+visualize_titan_grid(grid2, solved_grid2)
 solved_grid3 = solve_walls_of_maria(randgrid)
 visualize_solution(randgrid, solved_grid3)
