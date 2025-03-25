@@ -4,6 +4,19 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 
+INF = float('inf')
+
+# create a random 2d grid list
+def rand_grid(m, n):
+    opt = [0, -1, INF]
+    randgrid = []
+
+    for i in range(m):
+        row = []  # create a new row
+        for j in range(n):
+            row.append(random.choice(opt))
+        randgrid.append(row)  # add the complete row to the grid
+    return randgrid
 
 #BFS search logic
 
@@ -99,192 +112,19 @@ def grid_to_graph(grid):
             for dr, dc in directions:
                 nr, nc = r + dr, c + dc
                 # Check if neighbor is valid and not a Titan area
-                if (0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] != -1):
+                if (0 <= nr < rows and 0 <= nc < cols):
                     G.add_edge((r, c), (nr, nc))
     
     # Create position mapping for visualization
-    pos = {(r, c): (c*.01, -r*.01) for r in range(rows) for c in range(cols)}
+    pos = {(r, c): (c, -r) for r in range(rows) for c in range(cols)}
 
     return G, pos
 
-def visualize_titan_grid(grid, title="Walls of Maria"):
-    """Create a graph from grid and visualize with strongholds and titans"""
-    G, pos = grid_to_graph(grid)
-    
-    # Color mapping:
-    # - Green (0): Strongholds
-    # - Red (-1): Titan areas
-    # - Blue (INF or other): City areas with distances
-    node_colors = []
-    labels = {}
-    
-    for node in G.nodes():
-        r, c = node
-        value = grid[r][c]
-        
-        if value == 0:
-            node_colors.append('green')
-        elif value == -1:
-            node_colors.append('red')
-        elif value == float('inf'):
-            node_colors.append('blue')
-        else:
-            node_colors.append('yellow')  # Distance values
-            
-        # Create labels showing the distance values
-        if value == float('inf'):
-            labels[node] = 'INF'
-        elif value == -1:
-            labels[node] = 'X'
-        else:
-            labels[node] = str(value)
-    
-    # Visualization
-    plt.figure(figsize=(10, 8))
-    plt.title(title)
-    
-    # Draw the graph
-    nx.draw(G, pos=pos, node_color=node_colors, with_labels=False)
-    nx.draw_networkx_labels(G, pos, labels=labels)
-    
-    plt.show()
-
-def solve_walls_of_maria(grid):
-    """Solve the problem using multi-source BFS"""
-    rows, cols = len(grid), len(grid[0])
-    result_grid = [row[:] for row in grid]  # Make a copy of the grid
-    
-    # Find all strongholds to use as starting points
-    strongholds = []
-    for r in range(rows):
-        for c in range(cols):
-            if grid[r][c] == 0:
-                strongholds.append((r, c))
-    
-    # Create graph from grid
-    G, pos = grid_to_graph(grid)
-    
-    # Run modified BFS from all strongholds
-    visited = set()
-    q = queue.Queue()
-    
-    # Initialize with all strongholds
-    for r, c in strongholds:
-        q.put((r, c))
-        visited.add((r, c))
-    
-    # BFS
-    while not q.empty():
-        r, c = q.get()
-        
-        # Get current distance
-        current_dist = result_grid[r][c]
-        
-        # Check all four directions
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        for dr, dc in directions:
-            nr, nc = r + dr, c + dc
-            
-            # Check if valid and not visited
-            if (0 <= nr < rows and 0 <= nc < cols and
-                (nr, nc) not in visited and result_grid[nr][nc] != -1):
-                
-                # Update distance
-                if result_grid[nr][nc] == float('inf'):
-                    result_grid[nr][nc] = current_dist + 1
-                
-                q.put((nr, nc))
-                visited.add((nr, nc))
-    
-    return result_grid
-
-def visualize_solution(original_grid, solved_grid, title="Walls of Maria - Solved"):
-    """Visualize before and after grids"""
-    # Create a figure with two subplots
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 7))
-    
-    # Convert grids to NetworkX graphs
-    G1, pos1 = grid_to_graph(original_grid)
-    G2, pos2 = grid_to_graph(solved_grid)
-    
-    # Labels for the original grid
-    labels1 = {}
-    for node in G1.nodes():
-        r, c = node
-        val = original_grid[r][c]
-        if val == -1:
-            labels1[node] = "X"
-        elif val == 0:
-            labels1[node] = "0"
-        elif val == float('inf'):
-            labels1[node] = "INF"
-        else:
-            labels1[node] = str(val)
-    
-    # Labels for the solved grid
-    labels2 = {}
-    for node in G2.nodes():
-        r, c = node
-        val = solved_grid[r][c]
-        if val == -1:
-            labels2[node] = "X"
-        elif val == 0:
-            labels2[node] = "0" 
-        elif val == float('inf'):
-            labels2[node] = "INF"
-        else:
-            labels2[node] = str(val)
-    
-    # Color nodes
-    node_colors1 = []
-    for node in G1.nodes():
-        r, c = node
-        val = original_grid[r][c]
-        if val == -1:
-            node_colors1.append('red')
-        elif val == 0:
-            node_colors1.append('green')
-        else:
-            node_colors1.append('blue')
-    
-    node_colors2 = []
-    for node in G2.nodes():
-        r, c = node
-        val = solved_grid[r][c]
-        if val == -1:
-            node_colors2.append('red')
-        elif val == 0:
-            node_colors2.append('green')
-        else:
-            node_colors2.append('yellow')
-    
-    # Draw original grid
-    ax1.set_title("Original Grid")
-    nx.draw(G1, pos=pos1, ax=ax1, with_labels=False, node_color=node_colors1, node_shape='s')
-    nx.draw_networkx_labels(G1, pos1, labels=labels1, ax=ax1)
-    
-    # Draw solved grid
-    ax2.set_title("Solved Grid")
-    nx.draw(G2, pos=pos2, ax=ax2, with_labels=False, node_color=node_colors2, node_shape='s')
-    nx.draw_networkx_labels(G2, pos2, labels=labels2, ax=ax2)
-    
-    plt.tight_layout()
-    plt.show()
 
 # Complete example:
 if __name__ == "__main__":
 
-    INF = float('inf')
-    opt = [0, -1, INF]
-    randgrid = []
-    m = 20
-    n = 10
-    for i in range(m):
-        row = []  # Create a new row
-        for j in range(n):
-            row.append(random.choice(opt))
-        randgrid.append(row)  # Add the complete row to the grid
-
+    
     grid1 = [
         [INF, -1, 0, INF],
         [INF, INF, INF, -1],
@@ -298,9 +138,15 @@ if __name__ == "__main__":
         [INF, INF, 0]
     ]
 
-    solved_grid1 = solve_walls_of_maria(grid1)
-    visualize_solution(grid1, solved_grid1)
-    solved_grid2 = solve_walls_of_maria(grid2)
-    visualize_solution(grid2, solved_grid2)
-    solved_grid3 = solve_walls_of_maria(randgrid)
-    visualize_solution(randgrid, solved_grid3)
+    #solved_grid1 = solve_walls_of_maria(grid1)
+    #visualize_solution(grid1, solved_grid1)
+    #solved_grid2 = solve_walls_of_maria(grid2)
+    #visualize_solution(grid2, solved_grid2)
+    #solved_grid3 = solve_walls_of_maria(randgrid)
+    #visualize_solution(randgrid, solved_grid3)
+    #visualize_titan_grid(grid1)
+    #visualize_titan_grid(solved_grid1)
+    result = order_bfs(grid1, -1, 0)
+    graph1, pos = grid_to_graph(grid1)
+    print(pos)
+    #search_visualizer(result, "test", graph1, pos)
