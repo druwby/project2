@@ -32,8 +32,8 @@ def order_bfs(graph, start_node, end_node):
 
     while not q.empty():
         vertex = q.get()
-
-        if vertex not in visited:
+        print(vertex)
+        if vertex not in visited and graph.nodes[vertex]['value'] != -1:
             order.append(vertex)
             visited.add(vertex)
 
@@ -60,7 +60,7 @@ def order_bfs(graph, start_node, end_node):
     return {'order':order, 'found':found, 'distance':distances.get(end_node, -1), 'path':path}
 
 
-def search_visualizer(result, title, G, pos):
+def search_visualizer(result, title, G, pos, node_labels):
     plt.figure()
     plt.title(f"{title}: Distance = {result['distance']}")
     
@@ -76,10 +76,10 @@ def search_visualizer(result, title, G, pos):
         plt.title(f"{title}: Step {i}, Distance = {result['distance']}")
         
         # Draw the graph
-        nx.draw(G, pos, with_labels=True, 
+        nx.draw(G, pos, with_labels=True, node_shape = 's', labels = node_labels,
                 node_color=['b' if n == node else 
                            ('y' if n in result['path'] else 
-                           ('r' if G.degree(n) == 0 else 'g')) 
+                           ('r' if node_labels[n] == -1 else 'g')) 
                            for n in G.nodes()])
         
         # Highlight the path edges
@@ -96,29 +96,24 @@ def grid_to_graph(grid):
     """Convert a 2D grid to a NetworkX graph"""
     G = nx.Graph()
     rows, cols = len(grid), len(grid[0])
-    
-    # Add ALL nodes, including Titan-infested areas
-    for r in range(rows):
-        for c in range(cols):
-            G.add_node((r, c), value=grid[r][c])
-    
-    # Add edges between adjacent nodes (up, down, left, right)
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    # add nodes and edges to graph object
     for r in range(rows):
         for c in range(cols):
-            #if grid[r][c] == -1:  # Skip connecting Titan-infested areas
-             #   continue
-                
-            for dr, dc in directions:
-                nr, nc = r + dr, c + dc
-                # Check if neighbor is valid and not a Titan area
-                if (0 <= nr < rows and 0 <= nc < cols):
-                    G.add_edge((r, c), (nr, nc))
+            G.add_node((r, c), value=grid[r][c], label=grid[r][c])
+            for drow, dcol in directions:
+                newrow, newcol = r+drow, c+dcol
+                if (0<=newrow<rows and 0<= newcol < cols):
+                    G.add_edge((r,c), (newrow,newcol))
     
     # Create position mapping for visualization
     pos = {(r, c): (c, -r) for r in range(rows) for c in range(cols)}
 
-    return G, pos
+    node_labels = {}
+    for node, data in G.nodes(data=True):  # Iterate with attribute data
+        node_labels[node] = data.get('value', 'default')  # Use .get() to avoid KeyError
+
+    return G, pos, node_labels
 
 
 # Complete example:
@@ -146,7 +141,16 @@ if __name__ == "__main__":
     #visualize_solution(randgrid, solved_grid3)
     #visualize_titan_grid(grid1)
     #visualize_titan_grid(solved_grid1)
-    result = order_bfs(grid1, -1, 0)
-    graph1, pos = grid_to_graph(grid1)
-    print(pos)
-    #search_visualizer(result, "test", graph1, pos)
+    #result = order_bfs(grid1, -1, 0)
+    graph1, pos1, node_labels1 = grid_to_graph(grid1)
+    result1 = order_bfs(graph1, (0,0), (0,2))
+    search_visualizer(result1, "Graph 1", graph1, pos1, node_labels1)
+
+    graph2, pos2, node_labels2 = grid_to_graph(grid2)
+    result2 = order_bfs(graph2, (0,0), (0,2))
+    search_visualizer(result1, "Graph 2", graph2, pos2, node_labels2)
+
+    grid3 = rand_grid(10, 10)
+    graph3, pos3, node_labels3 = grid_to_graph(grid3)
+    result3 = order_bfs(graph3, (0,0), (0,2))
+    search_visualizer(result3, "Random Graph", graph3, pos3, node_labels3)
